@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Automatically destroy poops and fires</name>
+    <directory>automatically_destroy_poops_and_fires</directory>
+    <description>When a room doesn't have enemies, automatically destroy normal fires, normal poops and golden poops.</description>
+    <version>0.1</version>
+    <visibility>Public</visibility>
+</metadata>
