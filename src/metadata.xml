@@ -2,7 +2,10 @@
 <metadata>
     <name>Automatically destroy poops and fires</name>
     <directory>automatically_destroy_poops_and_fires</directory>
-    <description>When a room doesn't have enemies, automatically destroy normal fires, normal poops and golden poops.</description>
-    <version>0.1</version>
+    <id>2955338644</id>
+    <description>Automatically destroy normal fires, normal poops and golden poops in rooms with no enemies.</description>
+    <version>0.3</version>
     <visibility>Public</visibility>
+    <tag id="Lua"/>
+    <tag id="Tweaks"/>
 </metadata>
