@@ -1,25 +1,210 @@
+local json = require("json")
 local mod = RegisterMod("Automatically destroy poops and fires", 1)
+
+local defaultSettings = {
+    destroyNormalPoops = true,
+    destroyGoldenPoops = true,
+    destroyRedPoops = false,
+    destroyChunkyPoops = false,
+    destroyBlackPoops = false,
+    destroyNormalFires = true,
+    destroyRedFires = true,
+}
+
+local settings = defaultSettings
+
+local function saveSettings()
+    local jsonString = json.encode(settings)
+    mod:SaveData(jsonString)
+end
+
+mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, saveSettings)
+
+local function loadSettings()
+    local jsonString = mod:LoadData()
+    settings = json.decode(jsonString)
+    -- newly added settings are set to default value
+    for k, v in pairs(defaultSettings) do
+        if settings[k] == nil then
+            settings[k] = defaultSettings[k]
+        end
+    end
+end
+
+local function initializeSettings()
+    if not mod:HasData() then
+        settings = defaultSettings
+        return
+    end
+
+    if not pcall(loadSettings) then
+        settings = defaultSettings
+        Isaac.DebugString("Error: Failed to load " .. mod.Name .. " settings, reverting to default settings.")
+    end
+end
+
+initializeSettings()
+
+local function setupMyModConfigMenuSettings()
+    if ModConfigMenu == nil then
+        return
+    end
+
+    -- Remove menu if it exists, makes debugging easier
+    ModConfigMenu.RemoveCategory(mod.Name)
+
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyNormalFires
+                end,
+                Display = function()
+                    currentValue = settings.destroyNormalFires
+                    return "Destroy normal fires?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyNormalFires = newValue
+                end,
+            }
+    )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyRedFires
+                end,
+                Display = function()
+                    currentValue = settings.destroyRedFires
+                    return "Destroy red fires?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyRedFires = newValue
+                end,
+            }
+    )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyNormalPoops
+                end,
+                Display = function()
+                    currentValue = settings.destroyNormalPoops
+                    return "Destroy normal poops?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyNormalPoops = newValue
+                end,
+            }
+    )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyGoldenPoops
+                end,
+                Display = function()
+                    currentValue = settings.destroyGoldenPoops
+                    return "Destroy golden poops?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyGoldenPoops = newValue
+                end,
+            }
+    )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyRedPoops
+                end,
+                Display = function()
+                    currentValue = settings.destroyRedPoops
+                    return "Destroy red poops?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyRedPoops = newValue
+                end,
+            }
+    )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyBlackPoops
+                end,
+                Display = function()
+                    currentValue = settings.destroyBlackPoops
+                    return "Destroy black poops?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyBlackPoops = newValue
+                end,
+            }
+    )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyChunkyPoops
+                end,
+                Display = function()
+                    currentValue = settings.destroyChunkyPoops
+                    return "Destroy chunky poops?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyChunkyPoops = newValue
+                end,
+            }
+    )
+end
+
+setupMyModConfigMenuSettings()
 
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 local function destroyPoopsAndFires()
     local room = Game():GetRoom()
     if room:IsClear() then
-        for i = 0, room:GetGridSize() do
+        for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
             -- Variant 0 is normal poop, 3 is golden poop
-            if gridEntity ~= nil and gridEntity:GetType() == GridEntityType.GRID_POOP and (gridEntity:GetVariant() == 0 or gridEntity:GetVariant() == 3) then
-                gridEntity:Destroy()
+            if gridEntity ~= nil then
+                if  gridEntity:GetType() == GridEntityType.GRID_POOP then
+                    if  (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
+                            (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
+                            (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
+                            (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
+                            (settings.destroyBlackPoops and gridEntity:GetVariant() == 5) then
+                        gridEntity:Destroy()
+                    end
+                end
             end
         end
 
         entities = room:GetEntities()
-        for i = 0, entities.Size do
-            entity = entities:Get(i)
-            -- entity can be nil for some reason
-            -- Variant 0 are normal fireplaces
-            if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE and entity.Variant == 0 then
-                entity:Die()
+        for i = 1, entities.Size do
+            local entity = entities:Get(i)
+            if entity.Type == EntityType.ENTITY_FIREPLACE then
+                if (settings.destroyNormalFires and entity.Variant == 0) or
+                        (settings.destroyRedFires and entity.Variant == 1)then
+                    entity:Die()
+                end
             end
         end
 
