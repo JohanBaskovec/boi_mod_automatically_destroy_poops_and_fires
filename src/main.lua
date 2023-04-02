@@ -9,6 +9,7 @@ local defaultSettings = {
     destroyBlackPoops = false,
     destroyNormalFires = true,
     destroyRedFires = true,
+    destroyRocks = false,
 }
 
 local settings = defaultSettings
@@ -172,6 +173,26 @@ local function setupMyModConfigMenuSettings()
                 end,
             }
     )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyRocks
+                end,
+                Display = function()
+                    currentValue = settings.destroyRocks
+                    return "Destroy rocks?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyRocks = newValue
+                end,
+                Info = {
+                    'Destroy rocks automatically if you could destroy them for free.'
+                }
+            }
+    )
 end
 
 setupMyModConfigMenuSettings()
@@ -179,14 +200,30 @@ setupMyModConfigMenuSettings()
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 local function destroyPoopsAndFires()
     local room = Game():GetRoom()
+    local playerCanDestroyRocksForFree = false
+
+    nPlayers = Game():GetNumPlayers()
+    for i = 1, nPlayers do
+        player = Game():GetPlayer(i)
+        if (player:HasCollectible(CollectibleType.COLLECTIBLE_SAMSONS_CHAINS) and player.CanFly) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_SULFURIC_ACID) or
+                player:HasGoldenBomb() or
+                player:HasPlayerForm(PlayerForm.PLAYERFORM_STOMPY) then
+            playerCanDestroyRocksForFree = true
+        end
+    end
+
     if room:IsClear() then
         for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
             -- Variant 0 is normal poop, 3 is golden poop
             if gridEntity ~= nil then
-                if  gridEntity:GetType() == GridEntityType.GRID_POOP then
-                    if  (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
+                if gridEntity:GetType() == GridEntityType.GRID_POOP then
+                    if (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
                             (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
                             (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
                             (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
@@ -194,15 +231,24 @@ local function destroyPoopsAndFires()
                         gridEntity:Destroy()
                     end
                 end
+
+                if (gridEntity:GetType() == GridEntityType.GRID_ROCK or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCKT or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCK_SS or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT) and
+                        settings.destroyRocks and playerCanDestroyRocksForFree then
+                    gridEntity:Destroy()
+                end
             end
         end
 
         entities = room:GetEntities()
         for i = 1, entities.Size do
             local entity = entities:Get(i)
-            if entity.Type == EntityType.ENTITY_FIREPLACE then
+            if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
                 if (settings.destroyNormalFires and entity.Variant == 0) or
-                        (settings.destroyRedFires and entity.Variant == 1)then
+                        (settings.destroyRedFires and entity.Variant == 1) then
                     entity:Die()
                 end
             end
