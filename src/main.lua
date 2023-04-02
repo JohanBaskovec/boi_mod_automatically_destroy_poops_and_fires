@@ -220,6 +220,27 @@ setupMyModConfigMenuSettings()
 
 local blownUpWalls = {}
 
+local function createBridgesAroundGridEntity(gridEntity)
+    local room = Game():GetRoom()
+    local position = gridEntity.Position
+    local neighborPositions = {
+        Vector(position.X - 40, position.Y), -- left
+        Vector(position.X + 40, position.Y), -- right
+        Vector(position.X, position.Y - 40), -- top
+        Vector(position.X, position.Y + 40), -- bottom
+    }
+    for k, v in pairs(neighborPositions) do
+        neighborIndex = room:GetGridIndex(v)
+        neighbor = room:GetGridEntity(neighborIndex)
+        if neighbor ~= nil then
+            pit = neighbor:ToPit()
+            if pit ~= nil then
+                pit:MakeBridge(nil)
+            end
+        end
+    end
+end
+
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 local function destroyPoopsAndFires()
     local room = Game():GetRoom()
@@ -270,39 +291,38 @@ local function destroyPoopsAndFires()
         for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
-            if gridEntity ~= nil then
-                if gridEntity:GetType() == GridEntityType.GRID_POOP then
-                    if (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
-                            (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
-                            (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
-                            (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
-                            (settings.destroyBlackPoops and gridEntity:GetVariant() == 5) then
-                        gridEntity:Destroy()
-                    end
-                end
-
-                if (gridEntity:GetType() == GridEntityType.GRID_ROCK or
-                        gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB or
-                        gridEntity:GetType() == GridEntityType.GRID_ROCKT or
-                        gridEntity:GetType() == GridEntityType.GRID_ROCK_SS or
-                        gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT) and
-                        settings.destroyRocks and playerCanDestroyRocksForFree then
-                    gridEntity:Destroy()
-                end
+            -- We don't destroy rocks that contain a bomb (GridEntityType.GRID_ROCK_BOMB),
+            -- and mushrooms, pots and skulls (all GridEntityType.GRID_ROCK_ALT) because they could hurt the player
+            if gridEntity ~= nil and (
+                    (
+                            gridEntity:GetType() == GridEntityType.GRID_POOP and (
+                                    (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
+                                            (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
+                                            (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
+                                            (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
+                                            (settings.destroyBlackPoops and gridEntity:GetVariant() == 5)
+                            )
+                    ) or (
+                            (gridEntity:GetType() == GridEntityType.GRID_ROCK or
+                                    gridEntity:GetType() == GridEntityType.GRID_ROCKT or
+                                    gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
+                                    settings.destroyRocks and playerCanDestroyRocksForFree)
+            ) then
+                createBridgesAroundGridEntity(gridEntity)
+                gridEntity:Destroy()
             end
         end
+    end
 
-        entities = room:GetEntities()
-        for i = 1, entities.Size do
-            local entity = entities:Get(i)
-            if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
-                if (settings.destroyNormalFires and entity.Variant == 0) or
-                        (settings.destroyRedFires and entity.Variant == 1) then
-                    entity:Die()
-                end
+    entities = room:GetEntities()
+    for i = 1, entities.Size do
+        local entity = entities:Get(i)
+        if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
+            if (settings.destroyNormalFires and entity.Variant == 0) or
+                    (settings.destroyRedFires and entity.Variant == 1) then
+                entity:Die()
             end
         end
-
     end
 end
 
