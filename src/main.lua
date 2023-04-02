@@ -10,6 +10,7 @@ local defaultSettings = {
     destroyNormalFires = true,
     destroyRedFires = true,
     destroyRocks = false,
+    destroySecretRoomEntrances = false,
 }
 
 local settings = defaultSettings
@@ -193,19 +194,42 @@ local function setupMyModConfigMenuSettings()
                 }
             }
     )
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroySecretRoomEntrances
+                end,
+                Display = function()
+                    currentValue = settings.destroySecretRoomEntrances
+                    return "Destroy secret room entrances?" .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroySecretRoomEntrances = newValue
+                end,
+                Info = {
+                    'Destroy secret room entrances automatically if you could destroy them for free.'
+                }
+            }
+    )
 end
 
 setupMyModConfigMenuSettings()
+
+local blownUpWalls = {}
 
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 local function destroyPoopsAndFires()
     local room = Game():GetRoom()
     local playerCanDestroyRocksForFree = false
+    local playerCanDestroyWallsForFree = false
 
     nPlayers = Game():GetNumPlayers()
     for i = 1, nPlayers do
         player = Game():GetPlayer(i)
-        if (player:HasCollectible(CollectibleType.COLLECTIBLE_SAMSONS_CHAINS) and player.CanFly) or
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_SAMSONS_CHAINS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
@@ -214,13 +238,38 @@ local function destroyPoopsAndFires()
                 player:HasPlayerForm(PlayerForm.PLAYERFORM_STOMPY) then
             playerCanDestroyRocksForFree = true
         end
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_SULFURIC_ACID) or
+                player:HasGoldenBomb() then
+            playerCanDestroyWallsForFree = true
+        end
+    end
+    local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
+    if playerCanDestroyWallsForFree and settings.destroySecretRoomEntrances then
+        for i = 0, DoorSlot.NUM_DOOR_SLOTS do
+            -- Secret room walls are doors!
+            door = room:GetDoor(i)
+            if door ~= nil then
+                targetRoomId = door.TargetRoomIndex
+                -- For some reason, door:IsOpen() and door:IsBusted() always return false when entering a room,
+                -- so we can't rely on these functions to determine if the doors have been opened, so we
+                -- keep track of the blown up walls manually in the table blownUpWalls
+                if (door:IsRoomType(RoomType.ROOM_SECRET) or door:IsRoomType(RoomType.ROOM_SUPERSECRET) or currentRoomIsSecret) and blownUpWalls[targetRoomId] == nil then
+                    blownUpWalls[targetRoomId] = true
+                    local doorSlotPosition = room:GetDoorSlotPosition(i)
+                    local gridIndex = room:GetGridIndex(doorSlotPosition)
+                    room:DestroyGrid(gridIndex)
+                end
+            end
+        end
     end
 
     if room:IsClear() then
         for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
-            -- Variant 0 is normal poop, 3 is golden poop
             if gridEntity ~= nil then
                 if gridEntity:GetType() == GridEntityType.GRID_POOP then
                     if (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
@@ -257,5 +306,10 @@ local function destroyPoopsAndFires()
     end
 end
 
+local function initForNewStage()
+    blownUpWalls = {}
+end
+
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, destroyPoopsAndFires)
 mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, destroyPoopsAndFires)
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, initForNewStage)
