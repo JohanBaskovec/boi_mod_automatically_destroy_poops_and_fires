@@ -254,7 +254,11 @@ local function destroyPoopsAndFires()
                 player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_LEO) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_TERRA) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_NUMBER_TWO) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_SULFURIC_ACID) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_FRUIT_CAKE) or
                 player:HasGoldenBomb() or
                 player:HasPlayerForm(PlayerForm.PLAYERFORM_STOMPY) then
             playerCanDestroyRocksForFree = true
@@ -262,37 +266,41 @@ local function destroyPoopsAndFires()
         if player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_TERRA) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_NUMBER_TWO) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_SULFURIC_ACID) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_FRUIT_CAKE) or
                 player:HasGoldenBomb() then
             playerCanDestroyWallsForFree = true
         end
     end
-    local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
-    if playerCanDestroyWallsForFree and settings.destroySecretRoomEntrances then
-        for i = 0, DoorSlot.NUM_DOOR_SLOTS do
-            -- Secret room walls are doors!
-            door = room:GetDoor(i)
-            if door ~= nil then
-                targetRoomId = door.TargetRoomIndex
-                -- For some reason, door:IsOpen() and door:IsBusted() always return false when entering a room,
-                -- so we can't rely on these functions to determine if the doors have been opened, so we
-                -- keep track of the blown up walls manually in the table blownUpWalls
-                if (door:IsRoomType(RoomType.ROOM_SECRET) or door:IsRoomType(RoomType.ROOM_SUPERSECRET) or currentRoomIsSecret) and blownUpWalls[targetRoomId] == nil then
-                    blownUpWalls[targetRoomId] = true
-                    local doorSlotPosition = room:GetDoorSlotPosition(i)
-                    local gridIndex = room:GetGridIndex(doorSlotPosition)
-                    room:DestroyGrid(gridIndex)
+    if room:IsClear() then
+        local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
+        if playerCanDestroyWallsForFree and settings.destroySecretRoomEntrances then
+            for i = 0, DoorSlot.NUM_DOOR_SLOTS do
+                -- Secret room walls are doors!
+                door = room:GetDoor(i)
+                if door ~= nil then
+                    targetRoomId = door.TargetRoomIndex
+                    -- For some reason, door:IsOpen() and door:IsBusted() always return false when entering a room,
+                    -- so we can't rely on these functions to determine if the doors have been opened, so we
+                    -- keep track of the blown up walls manually in the table blownUpWalls
+                    if (door:IsRoomType(RoomType.ROOM_SECRET) or door:IsRoomType(RoomType.ROOM_SUPERSECRET) or currentRoomIsSecret) and blownUpWalls[targetRoomId] == nil then
+                        blownUpWalls[targetRoomId] = true
+                        local doorSlotPosition = room:GetDoorSlotPosition(i)
+                        local gridIndex = room:GetGridIndex(doorSlotPosition)
+                        room:DestroyGrid(gridIndex)
+                    end
                 end
             end
         end
-    end
 
-    if room:IsClear() then
         for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
             -- We don't destroy rocks that contain a bomb (GridEntityType.GRID_ROCK_BOMB),
             -- and mushrooms, pots and skulls (all GridEntityType.GRID_ROCK_ALT) because they could hurt the player
+            -- TODO: D12 and Mom's bracelet can make rocks useful so maybe we shouldn't destroy them then?
             if gridEntity ~= nil and (
                     (
                             gridEntity:GetType() == GridEntityType.GRID_POOP and (
