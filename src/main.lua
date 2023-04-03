@@ -320,15 +320,15 @@ local function destroyPoopsAndFires()
                 gridEntity:Destroy()
             end
         end
-    end
 
-    entities = room:GetEntities()
-    for i = 1, entities.Size do
-        local entity = entities:Get(i)
-        if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
-            if (settings.destroyNormalFires and entity.Variant == 0) or
-                    (settings.destroyRedFires and entity.Variant == 1) then
-                entity:Die()
+        entities = room:GetEntities()
+        for i = 1, entities.Size do
+            local entity = entities:Get(i)
+            if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
+                if (settings.destroyNormalFires and entity.Variant == 0) or
+                        (settings.destroyRedFires and entity.Variant == 1) then
+                    entity:Die()
+                end
             end
         end
     end
