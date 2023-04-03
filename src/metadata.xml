@@ -10,7 +10,7 @@ You can enable/disable the destruction of fires, poops, rocks and walls using Mo
 If you enable the destruction of rocks and walls, they will only be destroyed if you could destroy them without spending a bomb: if have a golden bomb, or if you are stompy, or if you have a passive item that would allow you to destroy them (i.e. all items that turn your tears into bombs or create bombs for free, Sulfuric Acid, and Samson's Chains).
 
 Destroyed poops and rocks will automatically fill holes all around them.</description>
-    <version>0.4</version>
+    <version>0.5</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
