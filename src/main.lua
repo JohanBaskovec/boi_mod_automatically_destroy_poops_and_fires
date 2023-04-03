@@ -8,7 +8,7 @@ local defaultSettings = {
     destroyChunkyPoops = false,
     destroyBlackPoops = false,
     destroyNormalFires = true,
-    destroyRedFires = true,
+    destroyRedFires = false,
     destroyRocks = false,
     destroySecretRoomEntrances = false,
 }
