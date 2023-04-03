@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-    <name>Automatically destroy poops and fires (and sometimes rocks and walls)</name>
+    <name>Automatically destroy poops and fires (and sometimes rocks and secret room walls)</name>
     <directory>automatically_destroy_poops_and_fires</directory>
     <id>2955338644</id>
-    <description>Automatically destroy fires and poops in rooms with no enemies. It saves a lot of time as you don't
-        need to "farm" poops and fires anymore, but keep in mind that it does make it much easier to reach the boss rush
-        and Hush!
+    <description>Automatically destroy fires and poops in rooms with no enemies, and destroy rocks and secret room walls if you could destroy them without spending bombs. It saves a lot of time as you don't need to &quot;farm&quot; poops and fires anymore, or look for secret rooms and trapdoors, but keep in mind that it does make it much easier to reach the boss rush and Hush!
 
-        You can configure which fire and poop types are destroyed by using Mod Config Menu Pure
-        https://steamcommunity.com/sharedfiles/filedetails/?id=2681875787. By default, only normal fires, normal poops
-        and golden poops are destroyed.
+You can enable/disable the destruction of fires, poops, rocks and walls using Mod Config Menu Pure https://steamcommunity.com/sharedfiles/filedetails/?id=2681875787. By default, only normal fires, normal poops and golden poops are destroyed.
 
-        In the configuration menu, you can also enable the destruction of rocks and secret room walls. They will only
-        be destroyed if you could destroy them without spending a bomb: if have a golden bomb, or if you are stompy, or
-        if you have a passive item that would allow you to destroy them (i.e. all items that turn your tears
-        into bombs and a few others).
+If you enable the destruction of rocks and walls, they will only be destroyed if you could destroy them without spending a bomb: if have a golden bomb, or if you are stompy, or if you have a passive item that would allow you to destroy them (i.e. all items that turn your tears into bombs or create bombs for free, Sulfuric Acid, and Samson's Chains).
 
-        Destroyed poops and rocks will automatically fill holes all around them.
-    </description>
-    <version>0.3</version>
+Destroyed poops and rocks will automatically fill holes all around them.</description>
+    <version>0.4</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
