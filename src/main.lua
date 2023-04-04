@@ -105,7 +105,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyNormalFires
-                    return "Destroy normal fires?" .. tostring(currentValue)
+                    return "Destroy normal fires? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyNormalFires = newValue
@@ -122,7 +122,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyRedFires
-                    return "Destroy red fires?" .. tostring(currentValue)
+                    return "Destroy red fires? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyRedFires = newValue
@@ -139,7 +139,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyNormalPoops
-                    return "Destroy normal poops?" .. tostring(currentValue)
+                    return "Destroy normal poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyNormalPoops = newValue
@@ -156,7 +156,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyGoldenPoops
-                    return "Destroy golden poops?" .. tostring(currentValue)
+                    return "Destroy golden poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyGoldenPoops = newValue
@@ -173,7 +173,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyRedPoops
-                    return "Destroy red poops?" .. tostring(currentValue)
+                    return "Destroy red poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyRedPoops = newValue
@@ -190,7 +190,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyBlackPoops
-                    return "Destroy black poops?" .. tostring(currentValue)
+                    return "Destroy black poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyBlackPoops = newValue
@@ -207,7 +207,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyChunkyPoops
-                    return "Destroy chunky poops?" .. tostring(currentValue)
+                    return "Destroy chunky poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyChunkyPoops = newValue
@@ -224,7 +224,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyRocks
-                    return "Destroy rocks?" .. tostring(currentValue)
+                    return "Destroy rocks? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyRocks = newValue
@@ -244,7 +244,7 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroySecretRoomEntrances
-                    return "Destroy secret room entrances?" .. tostring(currentValue)
+                    return "Destroy secret room entrances? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroySecretRoomEntrances = newValue
