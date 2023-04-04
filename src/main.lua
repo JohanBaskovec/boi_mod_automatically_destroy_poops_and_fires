@@ -69,6 +69,7 @@ end
 
 initializeSettings()
 
+local optionsModName = "Destroy poops&fires"
 local function setupMyModConfigMenuSettings()
     if ModConfigMenu == nil then
         return
@@ -78,7 +79,7 @@ local function setupMyModConfigMenuSettings()
     ModConfigMenu.RemoveCategory(mod.Name)
 
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.NUMBER,
@@ -100,7 +101,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -117,7 +118,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -134,7 +135,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -151,7 +152,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -168,7 +169,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -185,7 +186,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -202,7 +203,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -219,7 +220,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
@@ -239,7 +240,7 @@ local function setupMyModConfigMenuSettings()
             }
     )
     ModConfigMenu.AddSetting(
-            mod.Name,
+            optionsModName,
             nil,
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
