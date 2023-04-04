@@ -23,7 +23,7 @@ Destroyed poops and rocks will automatically fill holes all around them.
 
 [h2]TODO list[/h2]
 - only destroy rocks and poops that the player could reach (for the moment, every one of them are destroyed)</description>
-    <version>0.6</version>
+    <version>0.7</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
