@@ -76,7 +76,7 @@ local function setupMyModConfigMenuSettings()
     end
 
     -- Remove menu if it exists, makes debugging easier
-    ModConfigMenu.RemoveCategory(mod.Name)
+    ModConfigMenu.RemoveCategory(optionsModName)
 
     ModConfigMenu.AddSetting(
             optionsModName,
