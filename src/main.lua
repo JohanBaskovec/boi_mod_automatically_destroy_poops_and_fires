@@ -1,7 +1,25 @@
 local json = require("json")
 local mod = RegisterMod("Automatically destroy poops and fires", 1)
 
+local enabledChoices = {
+    "Yes",
+    "Only after 20 minutes",
+    "Only after 30 minutes",
+    "No",
+}
+
+local function getTableIndex(tbl, val)
+    for i, v in ipairs(tbl) do
+        if v == val then
+            return i
+        end
+    end
+
+    return 0
+end
+
 local defaultSettings = {
+    enabled = enabledChoices[1],
     destroyNormalPoops = true,
     destroyGoldenPoops = true,
     destroyRedPoops = false,
@@ -55,6 +73,28 @@ local function setupMyModConfigMenuSettings()
     -- Remove menu if it exists, makes debugging easier
     ModConfigMenu.RemoveCategory(mod.Name)
 
+    ModConfigMenu.AddSetting(
+            mod.Name,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.NUMBER,
+                CurrentSetting = function()
+                    return getTableIndex(enabledChoices, settings.enabled)
+                end,
+                Minimum = 1,
+                Maximum = #enabledChoices,
+                Display = function()
+                    return "Enabled: " .. settings.enabled
+                end,
+                OnChange = function(n)
+                    settings.enabled = enabledChoices[n]
+                end,
+                Info = {
+                    "Use this setting if you don't want to cheat: if you're aiming for Hush, enable only after 30 minutes, ",
+                    "if you're aiming for the boss rush, enable only after 20 minutes, enable otherwise.",
+                }
+            }
+    )
     ModConfigMenu.AddSetting(
             mod.Name,
             nil,
@@ -243,11 +283,20 @@ end
 
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 local function destroyPoopsAndFires()
-    local room = Game():GetRoom()
+    local game = Game()
+
+    local minutesElapsed = (game.TimeCounter / 30) / 60
+
+    if settings.enabled == "No" or (settings.enabled == "Only after 20 minutes" and minutesElapsed < 20) or
+            (settings.enabled == "Only after 30 minutes" and minutesElapsed < 30) then
+        return
+    end
+
+    local room = game:GetRoom()
     local playerCanDestroyRocksForFree = false
     local playerCanDestroyWallsForFree = false
 
-    nPlayers = Game():GetNumPlayers()
+    nPlayers = game:GetNumPlayers()
     for i = 1, nPlayers do
         player = Game():GetPlayer(i)
         if player:HasCollectible(CollectibleType.COLLECTIBLE_SAMSONS_CHAINS) or
@@ -301,6 +350,7 @@ local function destroyPoopsAndFires()
             -- We don't destroy rocks that contain a bomb (GridEntityType.GRID_ROCK_BOMB),
             -- and mushrooms, pots and skulls (all GridEntityType.GRID_ROCK_ALT) because they could hurt the player
             -- TODO: D12 and Mom's bracelet can make rocks useful so maybe we shouldn't destroy them then?
+            -- TODO: verify that player could reach the entity
             if gridEntity ~= nil and (
                     (
                             gridEntity:GetType() == GridEntityType.GRID_POOP and (
@@ -324,6 +374,7 @@ local function destroyPoopsAndFires()
         entities = room:GetEntities()
         for i = 1, entities.Size do
             local entity = entities:Get(i)
+            -- TODO: verify that player could reach the fire
             if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
                 if (settings.destroyNormalFires and entity.Variant == 0) or
                         (settings.destroyRedFires and entity.Variant == 1) then
