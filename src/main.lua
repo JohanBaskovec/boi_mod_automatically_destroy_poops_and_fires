@@ -263,8 +263,6 @@ end
 
 setupMyModConfigMenuSettings()
 
-local blownUpWalls = {}
-
 local function createBridgesAroundGridEntity(gridEntity)
     local room = Game():GetRoom()
     local position = gridEntity.Position
@@ -304,7 +302,7 @@ end
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 local function destroyPoopsAndFires()
     if not isModEnabled() then
-        return;
+        return ;
     end
 
     local game = Game()
@@ -339,32 +337,20 @@ local function destroyPoopsAndFires()
             playerCanDestroyWallsForFree = true
         end
     end
+    if playerCanDestroyWallsForFree then
+        local level = game:GetLevel()
+        level:SetCanSeeEverything(true)
+    end
     if room:IsClear() then
-        local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
-        if playerCanDestroyWallsForFree and settings.destroySecretRoomEntrances then
-            for i = 0, DoorSlot.NUM_DOOR_SLOTS do
-                -- Secret room walls are doors!
-                door = room:GetDoor(i)
-                if door ~= nil then
-                    targetRoomId = door.TargetRoomIndex
-                    -- For some reason, door:IsOpen() and door:IsBusted() always return false when entering a room,
-                    -- so we can't rely on these functions to determine if the doors have been opened, so we
-                    -- keep track of the blown up walls manually in the table blownUpWalls
-                    if (door:IsRoomType(RoomType.ROOM_SECRET) or door:IsRoomType(RoomType.ROOM_SUPERSECRET) or currentRoomIsSecret) and blownUpWalls[targetRoomId] == nil then
-                        blownUpWalls[targetRoomId] = true
-                        local doorSlotPosition = room:GetDoorSlotPosition(i)
-                        local gridIndex = room:GetGridIndex(doorSlotPosition)
-                        room:DestroyGrid(gridIndex)
-                    end
-                end
-            end
+        for i = 1, nPlayers do
+            player = Game():GetPlayer(i)
+            -- We make the player immune to bomb explosion and poison clouds (from mushroom)
+            player:AddCollectible(CollectibleType.COLLECTIBLE_HOST_HAT, 0, false)
+            player:AddCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE, 0, false)
         end
-
         for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
-            -- We don't destroy rocks that contain a bomb (GridEntityType.GRID_ROCK_BOMB),
-            -- and mushrooms, pots and skulls (all GridEntityType.GRID_ROCK_ALT) because they could hurt the player
             -- TODO: D12 and Mom's bracelet can make rocks useful so maybe we shouldn't destroy them then?
             -- TODO: verify that player could reach the entity
             if gridEntity ~= nil and (
@@ -379,6 +365,8 @@ local function destroyPoopsAndFires()
                     ) or (
                             (gridEntity:GetType() == GridEntityType.GRID_ROCK or
                                     gridEntity:GetType() == GridEntityType.GRID_ROCKT or
+                                    gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB or
+                                    gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT or
                                     gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
                                     settings.destroyRocks and playerCanDestroyRocksForFree)
             ) then
@@ -391,20 +379,25 @@ local function destroyPoopsAndFires()
         for i = 1, entities.Size do
             local entity = entities:Get(i)
             -- TODO: verify that player could reach the fire
-            if entity ~= nil and entity.Type == EntityType.ENTITY_FIREPLACE then
-                if (settings.destroyNormalFires and entity.Variant == 0) or
+            if entity ~= nil then
+                -- Remove mobs spawned by destroying pots and skulls
+                if entity.Type == EntityType.ENTITY_SPIDER or entity.Type == EntityType.ENTITY_HOST then
+                    entity:Die()
+                end
+                if entity.Type == EntityType.ENTITY_FIREPLACE and (settings.destroyNormalFires and entity.Variant == 0) or
                         (settings.destroyRedFires and entity.Variant == 1) then
                     entity:Die()
                 end
             end
         end
+
+        for i = 1, nPlayers do
+            player = Game():GetPlayer(i)
+            player:RemoveCollectible(CollectibleType.COLLECTIBLE_HOST_HAT)
+            player:RemoveCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE)
+        end
     end
 end
 
-local function initForNewStage()
-    blownUpWalls = {}
-end
-
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, destroyPoopsAndFires)
-mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, destroyPoopsAndFires)
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, initForNewStage)
+mod:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, destroyPoopsAndFires)
