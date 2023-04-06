@@ -307,34 +307,29 @@ local function destroyPoopsAndFires()
 
     local game = Game()
     local room = game:GetRoom()
-    local playerCanDestroyRocksForFree = false
+    local playerCanDestroyObstaclesForFree = false
+    local playerCanDestroyObstaclesSafely = false
     local playerCanDestroyWallsForFree = false
 
     nPlayers = game:GetNumPlayers()
     for i = 1, nPlayers do
         player = Game():GetPlayer(i)
         if player:HasCollectible(CollectibleType.COLLECTIBLE_SAMSONS_CHAINS) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_LEO) or
+                player:HasPlayerForm(PlayerForm.PLAYERFORM_STOMPY) then
+            playerCanDestroyObstaclesForFree = true
+        end
+        if player:HasGoldenBomb() or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_LEO) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_TERRA) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_NUMBER_TWO) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_SULFURIC_ACID) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_FRUIT_CAKE) or
-                player:HasGoldenBomb() or
-                player:HasPlayerForm(PlayerForm.PLAYERFORM_STOMPY) then
-            playerCanDestroyRocksForFree = true
-        end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_IPECAC) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_TERRA) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_NUMBER_TWO) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_SULFURIC_ACID) or
-                player:HasCollectible(CollectibleType.COLLECTIBLE_FRUIT_CAKE) or
-                player:HasGoldenBomb() then
+                player:HasCollectible(CollectibleType.COLLECTIBLE_FRUIT_CAKE) then
+            playerCanDestroyObstaclesForFree = true
             playerCanDestroyWallsForFree = true
+            playerCanDestroyObstaclesSafely = true
         end
     end
     if playerCanDestroyWallsForFree then
@@ -353,25 +348,30 @@ local function destroyPoopsAndFires()
 
             -- TODO: D12 and Mom's bracelet can make rocks useful so maybe we shouldn't destroy them then?
             -- TODO: verify that player could reach the entity
-            if gridEntity ~= nil and (
-                    (
-                            gridEntity:GetType() == GridEntityType.GRID_POOP and (
-                                    (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
-                                            (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
-                                            (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
-                                            (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
-                                            (settings.destroyBlackPoops and gridEntity:GetVariant() == 5)
-                            )
-                    ) or (
-                            (gridEntity:GetType() == GridEntityType.GRID_ROCK or
-                                    gridEntity:GetType() == GridEntityType.GRID_ROCKT or
-                                    gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB or
-                                    gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT or
-                                    gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
-                                    settings.destroyRocks and playerCanDestroyRocksForFree)
-            ) then
-                createBridgesAroundGridEntity(gridEntity)
-                gridEntity:Destroy()
+            if gridEntity ~= nil then
+                if (
+                        gridEntity:GetType() == GridEntityType.GRID_POOP and (
+                                (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
+                                        (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
+                                        (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
+                                        (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
+                                        (settings.destroyBlackPoops and gridEntity:GetVariant() == 5))
+                ) or (
+                        (gridEntity:GetType() == GridEntityType.GRID_ROCK or
+                                gridEntity:GetType() == GridEntityType.GRID_ROCKT or
+                                gridEntity:GetType() == GridEntityType.GRID_ROCK_SPIKED or
+                                gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
+                                settings.destroyRocks and playerCanDestroyObstaclesForFree
+                ) or (
+                        (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB or
+                                gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT) and
+                                settings.destroyRocks and playerCanDestroyObstaclesForFree and
+                                playerCanDestroyObstaclesSafely
+                ) then
+                    createBridgesAroundGridEntity(gridEntity)
+                    gridEntity:Destroy()
+                end
+
             end
         end
 
@@ -398,6 +398,5 @@ local function destroyPoopsAndFires()
         end
     end
 end
-
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, destroyPoopsAndFires)
 mod:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, destroyPoopsAndFires)
