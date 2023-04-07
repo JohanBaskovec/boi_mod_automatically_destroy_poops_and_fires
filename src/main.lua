@@ -436,8 +436,9 @@ function destroyPoopsAndFires()
             local entity = entities:Get(i)
             -- TODO: verify that player could reach the fire
             if entity ~= nil then
+                npc = entity:ToNPC()
                 -- Remove mobs spawned by destroying pots and skulls
-                if entity.Type == EntityType.ENTITY_SPIDER or entity.Type == EntityType.ENTITY_HOST then
+                if npc ~= nil then
                     entity:Die()
                 end
                 if entity.Type == EntityType.ENTITY_FIREPLACE and (settings.destroyNormalFires and entity.Variant == 0) or
