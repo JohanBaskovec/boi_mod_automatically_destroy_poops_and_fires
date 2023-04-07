@@ -417,8 +417,7 @@ function destroyPoopsAndFires()
                                 gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
                                 settings.destroyRocks and playerCanDestroyObstaclesForFree
                 ) or (
-                        (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB or
-                                gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT) and
+                        (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB) and
                                 settings.destroyRocks and playerCanDestroyObstaclesForFree and
                                 playerCanDestroyObstaclesSafely
                 ) then
@@ -428,6 +427,17 @@ function destroyPoopsAndFires()
                     gridEntity:Destroy()
                 end
 
+                backdrop = room:GetBackdropType()
+                -- We don't want to destroy alt rocks in some room types because they explode into tears
+                if gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT and
+                        settings.destroyRocks and playerCanDestroyObstaclesForFree and
+                        playerCanDestroyObstaclesSafely and
+                        backdrop ~= BackdropType.WOMB and
+                        backdrop ~= BackdropType.UTERO and
+                        backdrop ~= BackdropType.SCARRED_WOMB and
+                        backdrop ~= BackdropType.BLUE_WOMB then
+                    gridEntity:Destroy()
+                end
             end
         end
 
