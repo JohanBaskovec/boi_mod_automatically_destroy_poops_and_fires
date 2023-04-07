@@ -32,6 +32,8 @@ local defaultSettings = {
     destroyNormalFires = true,
     destroyRedFires = false,
     destroyRocks = false,
+    destroyRocksAndFiresIfD12 = false,
+    destroyRocksIfMomsBracelet = false,
     destroySecretRoomEntrances = false,
 }
 
@@ -245,6 +247,48 @@ local function setupMyModConfigMenuSettings()
             {
                 Type = ModConfigMenu.OptionType.BOOLEAN,
                 CurrentSetting = function()
+                    return settings.destroyRocksIfMomsBracelet
+                end,
+                Display = function()
+                    currentValue = settings.destroyRocksIfMomsBracelet
+                    return "Destroy rocks if Mom's bracelet? " .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyRocksIfMomsBracelet = newValue
+                end,
+                Info = {
+                    'Destroy rocks automatically if you could destroy them for free',
+                    "and you have Mom's bracelet equipped."
+                }
+            }
+    )
+    ModConfigMenu.AddSetting(
+            optionsModName,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
+                    return settings.destroyRocksAndFiresIfD12
+                end,
+                Display = function()
+                    currentValue = settings.destroyRocksAndFiresIfD12
+                    return "Destroy rocks&fires if D12? " .. tostring(currentValue)
+                end,
+                OnChange = function(newValue)
+                    settings.destroyRocksAndFiresIfD12 = newValue
+                end,
+                Info = {
+                    'Destroy rocks automatically if you could destroy them for free',
+                    'and you have the D12 equipped.'
+                }
+            }
+    )
+    ModConfigMenu.AddSetting(
+            optionsModName,
+            nil,
+            {
+                Type = ModConfigMenu.OptionType.BOOLEAN,
+                CurrentSetting = function()
                     return settings.destroySecretRoomEntrances
                 end,
                 Display = function()
@@ -300,25 +344,37 @@ local function isModEnabled()
 end
 
 -- Destroy the poops and fireplaces in the current room if it's been cleared
-local function destroyPoopsAndFires()
+function destroyPoopsAndFires()
     if not isModEnabled() then
         return ;
     end
 
     local game = Game()
     local room = game:GetRoom()
+
     local playerCanDestroyObstaclesForFree = false
     local playerCanDestroyObstaclesSafely = false
     local playerCanDestroyWallsForFree = false
+    local destroyedObstaclesCreateBridge = false
 
     nPlayers = game:GetNumPlayers()
+
     for i = 1, nPlayers do
         player = Game():GetPlayer(i)
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_D12) and not settings.destroyRocksAndFiresIfD12 then
+            return
+        end
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_MOMS_BRACELET) and settings.destroyRocksIfMomsBracelet then
+            playerCanDestroyObstaclesForFree = true
+            playerCanDestroyObstaclesSafely = true
+        end
         if player:HasCollectible(CollectibleType.COLLECTIBLE_SAMSONS_CHAINS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_LEO) or
                 player:HasPlayerForm(PlayerForm.PLAYERFORM_STOMPY) then
             playerCanDestroyObstaclesForFree = true
+            destroyedObstaclesCreateBridge = true
         end
+
         if player:HasGoldenBomb() or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_DR_FETUS) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
@@ -330,6 +386,7 @@ local function destroyPoopsAndFires()
             playerCanDestroyObstaclesForFree = true
             playerCanDestroyWallsForFree = true
             playerCanDestroyObstaclesSafely = true
+            destroyedObstaclesCreateBridge = true
         end
     end
     if playerCanDestroyWallsForFree then
@@ -346,7 +403,6 @@ local function destroyPoopsAndFires()
         for i = 1, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
-            -- TODO: D12 and Mom's bracelet can make rocks useful so maybe we shouldn't destroy them then?
             -- TODO: verify that player could reach the entity
             if gridEntity ~= nil then
                 if (
@@ -368,7 +424,9 @@ local function destroyPoopsAndFires()
                                 settings.destroyRocks and playerCanDestroyObstaclesForFree and
                                 playerCanDestroyObstaclesSafely
                 ) then
-                    createBridgesAroundGridEntity(gridEntity)
+                    if destroyedObstaclesCreateBridge then
+                        createBridgesAroundGridEntity(gridEntity)
+                    end
                     gridEntity:Destroy()
                 end
 
