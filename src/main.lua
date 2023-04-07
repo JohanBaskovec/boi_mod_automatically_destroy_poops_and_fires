@@ -231,13 +231,13 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyRocks
-                    return "Destroy rocks? " .. tostring(currentValue)
+                    return "Destroy obstacles? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyRocks = newValue
                 end,
                 Info = {
-                    'Destroy rocks automatically if you could destroy them for free.'
+                    'Destroy obstacles (rocks, pots, skulls, mushrooms) automatically if you could destroy them for free and safely.'
                 }
             }
     )
@@ -251,14 +251,13 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyRocksIfMomsBracelet
-                    return "Destroy rocks if Mom's bracelet? " .. tostring(currentValue)
+                    return "Destroy obstacles if Mom's bracelet? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyRocksIfMomsBracelet = newValue
                 end,
                 Info = {
-                    'Destroy rocks automatically if you could destroy them for free',
-                    "and you have Mom's bracelet equipped."
+                    "Destroy obstacles (rocks, pots, skulls, mushrooms) automatically if have Mom's bracelet equipped."
                 }
             }
     )
@@ -272,14 +271,13 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroyRocksAndFiresIfD12
-                    return "Destroy rocks&fires if D12? " .. tostring(currentValue)
+                    return "Destroy obstacles&fires if D12? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroyRocksAndFiresIfD12 = newValue
                 end,
                 Info = {
-                    'Destroy rocks automatically if you could destroy them for free',
-                    'and you have the D12 equipped.'
+                    'Destroy obstacles (rocks, pots, skulls, mushrooms) and fires automatically if you could destroy them for free and safely and you have the D12 equipped.'
                 }
             }
     )
@@ -293,13 +291,13 @@ local function setupMyModConfigMenuSettings()
                 end,
                 Display = function()
                     currentValue = settings.destroySecretRoomEntrances
-                    return "Destroy secret room entrances? " .. tostring(currentValue)
+                    return "Open secret room entrances? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
                     settings.destroySecretRoomEntrances = newValue
                 end,
                 Info = {
-                    'Destroy secret room entrances automatically if you could destroy them for free.'
+                    'Open secret room entrances automatically if you could destroy them for free.'
                 }
             }
     )
