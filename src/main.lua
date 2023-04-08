@@ -450,6 +450,9 @@ function destroyPoopsAndFires()
                 if entity.Type == EntityType.ENTITY_SPIDER or
                         entity.Type == EntityType.ENTITY_HOST or
                         entity.Type == EntityType.ENTITY_DIP or
+                        entity.Type == EntityType.ENTITY_SMALL_MAGGOT or
+                        entity.Type == EntityType.ENTITY_LEECH or
+                        entity.Type == EntityType.ENTITY_SMALL_LEECH or
                         entity.Type == EntityType.ENTITY_STRIDER then
                     entity:Die()
                 end
