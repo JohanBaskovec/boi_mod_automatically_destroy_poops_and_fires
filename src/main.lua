@@ -346,8 +346,11 @@ local function initForNewStage()
     blownUpWalls = {}
 end
 
+local immortalityFrameStart = 0
+local noFlagDamageBlink = false
+
 -- Destroy the poops and fireplaces in the current room if it's been cleared
-function destroyPoopsAndFires()
+local function destroyPoopsAndFires()
     if not isModEnabled() then
         return ;
     end
@@ -364,6 +367,15 @@ function destroyPoopsAndFires()
 
     for i = 0, nPlayers do
         local player = Game():GetPlayer(i)
+        if player == nil then
+            goto continue
+        end
+        -- We need to track manually if we set the flag because we don't want to clear it if it's been set by  another mod
+        if game:GetFrameCount() - immortalityFrameStart >= 10 and noFlagDamageBlink then
+            player:ClearEntityFlags(EntityFlag.FLAG_NO_DAMAGE_BLINK)
+            noFlagDamageBlink = false
+        end
+
         if player:HasCollectible(CollectibleType.COLLECTIBLE_D12) and not settings.destroyRocksAndFiresIfD12 then
             return
         end
@@ -391,6 +403,7 @@ function destroyPoopsAndFires()
             playerCanDestroyObstaclesSafely = true
             destroyedObstaclesCreateBridge = true
         end
+        ::continue::
     end
     if room:IsClear() then
         local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
@@ -415,6 +428,7 @@ function destroyPoopsAndFires()
         end
 
         local rocksAndPoops = {}
+        local rockBombs = {}
         local rockAlts = {}
 
         for i = 0, room:GetGridSize() do
@@ -422,7 +436,7 @@ function destroyPoopsAndFires()
 
             -- TODO: verify that player could reach the entity
             if gridEntity ~= nil then
-                if ((
+                if (
                         gridEntity:GetType() == GridEntityType.GRID_POOP and (
                                 (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
                                         (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
@@ -438,13 +452,14 @@ function destroyPoopsAndFires()
                                 gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
                                 settings.destroyRocks and playerCanDestroyObstaclesForFree and
                                 -- State 2 is destroyed
-                                gridEntity.State ~= 2
-                ) or (
-                        (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB) and
-                                settings.destroyRocks and playerCanDestroyObstaclesForFree and
-                                playerCanDestroyObstaclesSafely and gridEntity.State ~= 2
-                )) then
+                                gridEntity.State ~= 2)
+                then
                     table.insert(rocksAndPoops, gridEntity)
+                end
+                if (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB) and
+                        settings.destroyRocks and playerCanDestroyObstaclesForFree and
+                        playerCanDestroyObstaclesSafely and gridEntity.State ~= 2 then
+                    table.insert(rockBombs, gridEntity)
                 end
 
                 local backdrop = room:GetBackdropType()
@@ -465,13 +480,19 @@ function destroyPoopsAndFires()
             end
         end
 
-        if #rocksAndPoops > 0 or #rockAlts > 0 then
-            for i = 0, nPlayers do
-                local player = Game():GetPlayer(i)
-                if player ~= nil then
-                    -- We make the player immune to bomb explosion and poison clouds (from mushroom)
-                    player:AddCollectible(CollectibleType.COLLECTIBLE_HOST_HAT, 0, false)
-                    player:AddCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE, 0, false)
+        if #rocksAndPoops > 0 or #rockAlts > 0 or #rockBombs > 0 then
+            if #rockAlts > 0 or #rockBombs > 0 then
+                for i = 0, nPlayers do
+                    local player = Game():GetPlayer(i)
+                    if player ~= nil then
+                        -- We make the player immune to bomb explosion and poison clouds (from mushroom)
+                        -- 8 is apparently just above the duration of an explosion (tested in-game),
+                        -- so we put 10 just to be safe
+                        player:SetMinDamageCooldown(10)
+                        player:AddEntityFlags(EntityFlag.FLAG_NO_DAMAGE_BLINK)
+                        noFlagDamageBlink = true
+                        immortalityFrameStart = game:GetFrameCount()
+                    end
                 end
             end
 
@@ -481,6 +502,12 @@ function destroyPoopsAndFires()
                 end
                 rockOrPoop:Destroy()
             end
+            for _, rockBomb in ipairs(rockBombs) do
+                if destroyedObstaclesCreateBridge then
+                    createBridgesAroundGridEntity(rockBomb)
+                end
+                rockBomb:Destroy()
+            end
 
             for _, rockAlt in ipairs(rockAlts) do
                 rockAlt:Destroy()
@@ -489,7 +516,6 @@ function destroyPoopsAndFires()
             local entities = room:GetEntities()
             for i = 0, entities.Size do
                 local entity = entities:Get(i)
-                -- TODO: verify that player could reach the fire
                 if entity ~= nil then
                     -- Remove mobs spawned by destroying pots and skulls
                     if entity.Type == EntityType.ENTITY_SPIDER or
@@ -501,14 +527,6 @@ function destroyPoopsAndFires()
                             entity.Type == EntityType.ENTITY_STRIDER then
                         entity:Die()
                     end
-                end
-            end
-
-            for i = 0, nPlayers do
-                local player = Game():GetPlayer(i)
-                if player ~= nil then
-                    player:RemoveCollectible(CollectibleType.COLLECTIBLE_HOST_HAT)
-                    player:RemoveCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE)
                 end
             end
         end
