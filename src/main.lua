@@ -431,6 +431,8 @@ function destroyPoopsAndFires()
                         settings.destroyRocks and playerCanDestroyObstaclesForFree and
                         playerCanDestroyObstaclesSafely and
                         backdrop ~= BackdropType.WOMB and
+                        backdrop ~= BackdropType.DROSS and
+                        backdrop ~= BackdropType.DOWNPOUR and
                         backdrop ~= BackdropType.UTERO and
                         backdrop ~= BackdropType.SCARRED_WOMB and
                         backdrop ~= BackdropType.BLUE_WOMB and
