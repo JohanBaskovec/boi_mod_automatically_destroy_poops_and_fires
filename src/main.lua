@@ -403,7 +403,7 @@ local function destroyPoopsAndFires()
             playerCanDestroyObstaclesSafely = true
             destroyedObstaclesCreateBridge = true
         end
-        ::continue::
+        :: continue ::
     end
     if room:IsClear() then
         local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
@@ -427,7 +427,8 @@ local function destroyPoopsAndFires()
             end
         end
 
-        local rocksAndPoops = {}
+        local rocks = {}
+        local poops = {}
         local rockBombs = {}
         local rockAlts = {}
 
@@ -436,25 +437,25 @@ local function destroyPoopsAndFires()
 
             -- TODO: verify that player could reach the entity
             if gridEntity ~= nil then
-                if (
-                        gridEntity:GetType() == GridEntityType.GRID_POOP and (
-                                (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
-                                        (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
-                                        (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
-                                        (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
-                                        (settings.destroyBlackPoops and gridEntity:GetVariant() == 5)) and
-                                -- State 1000 is destroyed
-                                gridEntity.State ~= 1000
-                ) or (
-                        (gridEntity:GetType() == GridEntityType.GRID_ROCK or
-                                gridEntity:GetType() == GridEntityType.GRID_ROCKT or
-                                gridEntity:GetType() == GridEntityType.GRID_ROCK_SPIKED or
-                                gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
-                                settings.destroyRocks and playerCanDestroyObstaclesForFree and
-                                -- State 2 is destroyed
-                                gridEntity.State ~= 2)
+                if gridEntity:GetType() == GridEntityType.GRID_POOP and (
+                        (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
+                                (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
+                                (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
+                                (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
+                                (settings.destroyBlackPoops and gridEntity:GetVariant() == 5)) and
+                        -- State 1000 is destroyed
+                        gridEntity.State ~= 1000 then
+                    table.insert(poops, gridEntity)
+                end
+                if (gridEntity:GetType() == GridEntityType.GRID_ROCK or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCKT or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCK_SPIKED or
+                        gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
+                        settings.destroyRocks and playerCanDestroyObstaclesForFree and
+                        -- State 2 is destroyed
+                        gridEntity.State ~= 2
                 then
-                    table.insert(rocksAndPoops, gridEntity)
+                    table.insert(rocks, gridEntity)
                 end
                 if (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB) and
                         settings.destroyRocks and playerCanDestroyObstaclesForFree and
@@ -480,27 +481,18 @@ local function destroyPoopsAndFires()
             end
         end
 
-        if #rocksAndPoops > 0 or #rockAlts > 0 or #rockBombs > 0 then
-            if #rockAlts > 0 or #rockBombs > 0 then
-                for i = 0, nPlayers do
-                    local player = Game():GetPlayer(i)
-                    if player ~= nil then
-                        -- We make the player immune to bomb explosion and poison clouds (from mushroom)
-                        -- 8 is apparently just above the duration of an explosion (tested in-game),
-                        -- so we put 10 just to be safe
-                        player:SetMinDamageCooldown(10)
-                        player:AddEntityFlags(EntityFlag.FLAG_NO_DAMAGE_BLINK)
-                        noFlagDamageBlink = true
-                        immortalityFrameStart = game:GetFrameCount()
-                    end
+        if #rockAlts > 0 or #rockBombs > 0 then
+            for i = 0, nPlayers do
+                local player = Game():GetPlayer(i)
+                if player ~= nil then
+                    -- We make the player immune to bomb explosion and poison clouds (from mushroom)
+                    -- 8 is apparently just above the duration of an explosion (tested in-game),
+                    -- so we use 10 just to be safe
+                    player:SetMinDamageCooldown(10)
+                    player:AddEntityFlags(EntityFlag.FLAG_NO_DAMAGE_BLINK)
+                    noFlagDamageBlink = true
+                    immortalityFrameStart = game:GetFrameCount()
                 end
-            end
-
-            for _, rockOrPoop in ipairs(rocksAndPoops) do
-                if destroyedObstaclesCreateBridge then
-                    createBridgesAroundGridEntity(rockOrPoop)
-                end
-                rockOrPoop:Destroy()
             end
             for _, rockBomb in ipairs(rockBombs) do
                 if destroyedObstaclesCreateBridge then
@@ -529,6 +521,20 @@ local function destroyPoopsAndFires()
                     end
                 end
             end
+        end
+
+        for _, poop in ipairs(poops) do
+            if destroyedObstaclesCreateBridge then
+                createBridgesAroundGridEntity(poop)
+            end
+            -- Destroy() doesn't work on Golden Poops
+            poop:Hurt(1000)
+        end
+        for _, rock in ipairs(rocks) do
+            if destroyedObstaclesCreateBridge then
+                createBridgesAroundGridEntity(rock)
+            end
+            rock:Destroy()
         end
 
         local entities = room:GetEntities()
