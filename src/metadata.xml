@@ -20,10 +20,10 @@ In the configuration menu you can:
 All poops and fires are destroyed in empty rooms, even if you can't reach them (if they're behind a wall for example). It *can* give you an advantage in some rare situations, because broken poops behind unpassable walls can drop loot that you can then decide to pick up using a The Hangman card for example. Destroyed poops automatically fill holes around them.
 
 [h3]Rocks[/h3]
-Like with poop destruction, rocks are destroyed even if unreachable, *but* only you could destroy them without spending a bomb: if have a golden bomb, or if you are stompy, or if you have a passive item that would allow you to destroy them (i.e. all items that turn your tears into bombs or create bombs for free, Sulfuric Acid, and Samson's Chains). Destroyed rocks will automatically fill holes all around them.
+Like with poop destruction, rocks are destroyed even if unreachable, [b]but[/b] only if you could destroy them without spending a bomb: if have a golden bomb, or if you are stompy, or if you have a passive item that would allow you to destroy them (i.e. all items that turn your tears into bombs or create bombs for free, Sulfuric Acid, and Samson's Chains). Destroyed rocks will automatically fill holes all around them.
 
-[h3]Pots, skulls and mushrooms[/h3]
-Pots and skulls are destroyed only if you could destroy them safely from afar, therefore they're not destroyed if you're only stompy or only have Samson's Chains  (Pots can spawn spiders than hurt you instantly, mushrooms can explode). If you can destroy them safely, Spiders and Hosts spawned by destroyed pots and skulls will be killed instantly, and destroyed mushrooms and rock bombs won't hurt you.
+[h3]Pots, skulls, buckets and mushrooms[/h3]
+Like rocks, pots and skulls are destroyed if you could destroy them without a bomb, [b]but[/b] only if you could destroy them safely from afar, therefore they're not destroyed if you're only stompy or only have Samson's Chains (Pots can spawn spiders than hurt you almost instantly, mushrooms can explode). If you can destroy them safely, Spiders, Hosts, Leeches etc. spawned by destroyed pots and skulls will be killed instantly, and destroyed mushrooms and rock bombs won't hurt you.
 
 [h3]D12 and Mom's Bracelet[/h3]
 The D12 and Mom's Bracelet can make obstacles useful, therefore their automatic destruction is disabled by default when you have these items equipped. It can be enabled in the options.
@@ -32,7 +32,7 @@ If you have Mom's Bracelet equipped, and enable obstacle destruction in the opti
 
 [h3]Secret room entrances[/h3]
 If you could destroy secret room entrances without spending bombs, the entrances will be open (you get the &quot;I can see forever&quot; pill effect).</description>
-    <version>0.10</version>
+    <version>0.11</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
