@@ -341,6 +341,11 @@ local function isModEnabled()
     return modEnabled
 end
 
+local blownUpWalls = {}
+local function initForNewStage()
+    blownUpWalls = {}
+end
+
 -- Destroy the poops and fireplaces in the current room if it's been cleared
 function destroyPoopsAndFires()
     if not isModEnabled() then
@@ -387,11 +392,28 @@ function destroyPoopsAndFires()
             destroyedObstaclesCreateBridge = true
         end
     end
-    if playerCanDestroyWallsForFree then
-        local level = game:GetLevel()
-        level:SetCanSeeEverything(true)
-    end
     if room:IsClear() then
+        local currentRoomIsSecret = room:GetType() == RoomType.ROOM_SECRET or room:GetType() == RoomType.ROOM_SUPERSECRET
+        if playerCanDestroyWallsForFree and settings.destroySecretRoomEntrances then
+            for i = 0, DoorSlot.NUM_DOOR_SLOTS do
+                -- Secret room walls are doors!
+                local door = room:GetDoor(i)
+                if door ~= nil then
+                    local targetRoomId = door.TargetRoomIndex
+                    -- For some reason, door:IsOpen() and door:IsBusted() always return false when entering a room,
+                    -- so we can't rely on these functions to determine if the doors have been opened, so we
+                    -- keep track of the blown up walls manually in the table blownUpWalls
+                    if (door:IsRoomType(RoomType.ROOM_SECRET) or door:IsRoomType(RoomType.ROOM_SUPERSECRET)
+                            or currentRoomIsSecret) and blownUpWalls[targetRoomId] == nil then
+                        blownUpWalls[targetRoomId] = true
+                        local doorSlotPosition = room:GetDoorSlotPosition(i)
+                        local gridIndex = room:GetGridIndex(doorSlotPosition)
+                        room:DestroyGrid(gridIndex)
+                    end
+                end
+            end
+        end
+
         local rocksAndPoops = {}
         local rockAlts = {}
 
@@ -505,5 +527,7 @@ function destroyPoopsAndFires()
 
     end
 end
+
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, destroyPoopsAndFires)
 mod:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, destroyPoopsAndFires)
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, initForNewStage)
