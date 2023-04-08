@@ -32,7 +32,7 @@ If you have Mom's Bracelet equipped, and enable obstacle destruction in the opti
 
 [h3]Secret room entrances[/h3]
 If you could destroy secret room entrances without spending bombs, the entrances will be open (you get the &quot;I can see forever&quot; pill effect).</description>
-    <version>0.12</version>
+    <version>0.13</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
