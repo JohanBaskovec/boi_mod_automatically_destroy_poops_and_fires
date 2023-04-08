@@ -111,7 +111,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyNormalFires
                 end,
                 Display = function()
-                    currentValue = settings.destroyNormalFires
+                    local currentValue = settings.destroyNormalFires
                     return "Destroy normal fires? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -128,7 +128,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyRedFires
                 end,
                 Display = function()
-                    currentValue = settings.destroyRedFires
+                    local currentValue = settings.destroyRedFires
                     return "Destroy red fires? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -145,7 +145,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyNormalPoops
                 end,
                 Display = function()
-                    currentValue = settings.destroyNormalPoops
+                    local currentValue = settings.destroyNormalPoops
                     return "Destroy normal poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -162,7 +162,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyGoldenPoops
                 end,
                 Display = function()
-                    currentValue = settings.destroyGoldenPoops
+                    local currentValue = settings.destroyGoldenPoops
                     return "Destroy golden poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -179,7 +179,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyRedPoops
                 end,
                 Display = function()
-                    currentValue = settings.destroyRedPoops
+                    local currentValue = settings.destroyRedPoops
                     return "Destroy red poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -196,7 +196,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyBlackPoops
                 end,
                 Display = function()
-                    currentValue = settings.destroyBlackPoops
+                    local currentValue = settings.destroyBlackPoops
                     return "Destroy black poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -213,7 +213,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyChunkyPoops
                 end,
                 Display = function()
-                    currentValue = settings.destroyChunkyPoops
+                    local currentValue = settings.destroyChunkyPoops
                     return "Destroy chunky poops? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -230,7 +230,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyRocks
                 end,
                 Display = function()
-                    currentValue = settings.destroyRocks
+                    local currentValue = settings.destroyRocks
                     return "Destroy obstacles? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -250,7 +250,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyRocksIfMomsBracelet
                 end,
                 Display = function()
-                    currentValue = settings.destroyRocksIfMomsBracelet
+                    local currentValue = settings.destroyRocksIfMomsBracelet
                     return "Destroy obstacles if Mom's bracelet? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -270,7 +270,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroyRocksAndFiresIfD12
                 end,
                 Display = function()
-                    currentValue = settings.destroyRocksAndFiresIfD12
+                    local currentValue = settings.destroyRocksAndFiresIfD12
                     return "Destroy obstacles&fires if D12? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -290,7 +290,7 @@ local function setupMyModConfigMenuSettings()
                     return settings.destroySecretRoomEntrances
                 end,
                 Display = function()
-                    currentValue = settings.destroySecretRoomEntrances
+                    local currentValue = settings.destroySecretRoomEntrances
                     return "Open secret room entrances? " .. tostring(currentValue)
                 end,
                 OnChange = function(newValue)
@@ -315,8 +315,8 @@ local function createBridgesAroundGridEntity(gridEntity)
         Vector(position.X, position.Y + 40), -- bottom
     }
     for k, v in pairs(neighborPositions) do
-        neighborIndex = room:GetGridIndex(v)
-        neighbor = room:GetGridEntity(neighborIndex)
+        local neighborIndex = room:GetGridIndex(v)
+        local neighbor = room:GetGridEntity(neighborIndex)
         if neighbor ~= nil then
             pit = neighbor:ToPit()
             if pit ~= nil then
@@ -335,7 +335,7 @@ local function isModEnabled()
     local room = level:GetCurrentRoom()
     local isBossRush = room:GetType() == RoomType.ROOM_BOSSRUSH
 
-    modEnabled = (settings.enabled == CHOICE_YES or
+    local modEnabled = (settings.enabled == CHOICE_YES or
             (settings.enabled == CHOICE_AFTER_20_MINUTES_OR_BOSS_RUSH and (minutesElapsed > 20 or isBossRush or stage >= LevelStage.STAGE4_1)) or
             (settings.enabled == CHOICE_AFTER_30_MINUTES_OR_HUSH and (minutesElapsed > 30 or stage >= LevelStage.STAGE4_3)))
     return modEnabled
@@ -355,10 +355,10 @@ function destroyPoopsAndFires()
     local playerCanDestroyWallsForFree = false
     local destroyedObstaclesCreateBridge = false
 
-    nPlayers = game:GetNumPlayers()
+    local nPlayers = game:GetNumPlayers()
 
-    for i = 1, nPlayers do
-        player = Game():GetPlayer(i)
+    for i = 0, nPlayers do
+        local player = Game():GetPlayer(i)
         if player:HasCollectible(CollectibleType.COLLECTIBLE_D12) and not settings.destroyRocksAndFiresIfD12 then
             return
         end
@@ -392,42 +392,40 @@ function destroyPoopsAndFires()
         level:SetCanSeeEverything(true)
     end
     if room:IsClear() then
-        for i = 1, nPlayers do
-            player = Game():GetPlayer(i)
-            -- We make the player immune to bomb explosion and poison clouds (from mushroom)
-            player:AddCollectible(CollectibleType.COLLECTIBLE_HOST_HAT, 0, false)
-            player:AddCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE, 0, false)
-        end
-        for i = 1, room:GetGridSize() do
+        local rocksAndPoops = {}
+        local rockAlts = {}
+
+        for i = 0, room:GetGridSize() do
             local gridEntity = room:GetGridEntity(i)
 
             -- TODO: verify that player could reach the entity
             if gridEntity ~= nil then
-                if (
+                if ((
                         gridEntity:GetType() == GridEntityType.GRID_POOP and (
                                 (settings.destroyNormalPoops and gridEntity:GetVariant() == 0) or
                                         (settings.destroyRedPoops and gridEntity:GetVariant() == 1) or
                                         (settings.destroyChunkyPoops and gridEntity:GetVariant() == 2) or
                                         (settings.destroyGoldenPoops and gridEntity:GetVariant() == 3) or
-                                        (settings.destroyBlackPoops and gridEntity:GetVariant() == 5))
+                                        (settings.destroyBlackPoops and gridEntity:GetVariant() == 5)) and
+                                -- State 1000 is destroyed
+                                gridEntity.State ~= 1000
                 ) or (
                         (gridEntity:GetType() == GridEntityType.GRID_ROCK or
                                 gridEntity:GetType() == GridEntityType.GRID_ROCKT or
                                 gridEntity:GetType() == GridEntityType.GRID_ROCK_SPIKED or
                                 gridEntity:GetType() == GridEntityType.GRID_ROCK_SS) and
-                                settings.destroyRocks and playerCanDestroyObstaclesForFree
+                                settings.destroyRocks and playerCanDestroyObstaclesForFree and
+                                -- State 2 is destroyed
+                                gridEntity.State ~= 2
                 ) or (
                         (gridEntity:GetType() == GridEntityType.GRID_ROCK_BOMB) and
                                 settings.destroyRocks and playerCanDestroyObstaclesForFree and
-                                playerCanDestroyObstaclesSafely
-                ) then
-                    if destroyedObstaclesCreateBridge then
-                        createBridgesAroundGridEntity(gridEntity)
-                    end
-                    gridEntity:Destroy()
+                                playerCanDestroyObstaclesSafely and gridEntity.State ~= 2
+                )) then
+                    table.insert(rocksAndPoops, gridEntity)
                 end
 
-                backdrop = room:GetBackdropType()
+                local backdrop = room:GetBackdropType()
                 -- We don't want to destroy alt rocks in some room types because they explode into tears
                 if gridEntity:GetType() == GridEntityType.GRID_ROCK_ALT and
                         settings.destroyRocks and playerCanDestroyObstaclesForFree and
@@ -435,27 +433,67 @@ function destroyPoopsAndFires()
                         backdrop ~= BackdropType.WOMB and
                         backdrop ~= BackdropType.UTERO and
                         backdrop ~= BackdropType.SCARRED_WOMB and
-                        backdrop ~= BackdropType.BLUE_WOMB then
-                    gridEntity:Destroy()
+                        backdrop ~= BackdropType.BLUE_WOMB and
+                        -- State == 2 is destroyed
+                        gridEntity.State ~= 2 then
+                    table.insert(rockAlts, gridEntity)
                 end
             end
         end
 
-        entities = room:GetEntities()
-        for i = 1, entities.Size do
+        if #rocksAndPoops > 0 or #rockAlts > 0 then
+            for i = 0, nPlayers do
+                local player = Game():GetPlayer(i)
+                if player ~= nil then
+                    -- We make the player immune to bomb explosion and poison clouds (from mushroom)
+                    player:AddCollectible(CollectibleType.COLLECTIBLE_HOST_HAT, 0, false)
+                    player:AddCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE, 0, false)
+                end
+            end
+
+            for _, rockOrPoop in ipairs(rocksAndPoops) do
+                if destroyedObstaclesCreateBridge then
+                    createBridgesAroundGridEntity(rockOrPoop)
+                end
+                rockOrPoop:Destroy()
+            end
+
+            for _, rockAlt in ipairs(rockAlts) do
+                rockAlt:Destroy()
+            end
+
+            local entities = room:GetEntities()
+            for i = 0, entities.Size do
+                local entity = entities:Get(i)
+                -- TODO: verify that player could reach the fire
+                if entity ~= nil then
+                    -- Remove mobs spawned by destroying pots and skulls
+                    if entity.Type == EntityType.ENTITY_SPIDER or
+                            entity.Type == EntityType.ENTITY_HOST or
+                            entity.Type == EntityType.ENTITY_DIP or
+                            entity.Type == EntityType.ENTITY_SMALL_MAGGOT or
+                            entity.Type == EntityType.ENTITY_LEECH or
+                            entity.Type == EntityType.ENTITY_SMALL_LEECH or
+                            entity.Type == EntityType.ENTITY_STRIDER then
+                        entity:Die()
+                    end
+                end
+            end
+
+            for i = 0, nPlayers do
+                local player = Game():GetPlayer(i)
+                if player ~= nil then
+                    player:RemoveCollectible(CollectibleType.COLLECTIBLE_HOST_HAT)
+                    player:RemoveCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE)
+                end
+            end
+        end
+
+        local entities = room:GetEntities()
+        for i = 0, entities.Size do
             local entity = entities:Get(i)
             -- TODO: verify that player could reach the fire
             if entity ~= nil then
-                -- Remove mobs spawned by destroying pots and skulls
-                if entity.Type == EntityType.ENTITY_SPIDER or
-                        entity.Type == EntityType.ENTITY_HOST or
-                        entity.Type == EntityType.ENTITY_DIP or
-                        entity.Type == EntityType.ENTITY_SMALL_MAGGOT or
-                        entity.Type == EntityType.ENTITY_LEECH or
-                        entity.Type == EntityType.ENTITY_SMALL_LEECH or
-                        entity.Type == EntityType.ENTITY_STRIDER then
-                    entity:Die()
-                end
                 if entity.Type == EntityType.ENTITY_FIREPLACE and (settings.destroyNormalFires and entity.Variant == 0) or
                         (settings.destroyRedFires and entity.Variant == 1) then
                     entity:Die()
@@ -463,11 +501,6 @@ function destroyPoopsAndFires()
             end
         end
 
-        for i = 1, nPlayers do
-            player = Game():GetPlayer(i)
-            player:RemoveCollectible(CollectibleType.COLLECTIBLE_HOST_HAT)
-            player:RemoveCollectible(CollectibleType.COLLECTIBLE_BOBS_CURSE)
-        end
     end
 end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, destroyPoopsAndFires)
