@@ -1,6 +1,7 @@
 local json = require("json")
 local mod = RegisterMod("Automatically destroy poops and fires", 1)
 
+local debugLogEnabled = false
 local CHOICE_YES = "Yes"
 local CHOICE_NO = "No"
 local CHOICE_AFTER_20_MINUTES_OR_BOSS_RUSH = "After 20 minutes or boss rush"
@@ -11,6 +12,12 @@ local enabledChoices = {
     CHOICE_AFTER_30_MINUTES_OR_HUSH,
     CHOICE_NO,
 }
+
+local function debugLog(str)
+    if debugLogEnabled then
+        Isaac.DebugString(mod.Name .. ' : ' .. str)
+    end
+end
 
 local function getTableIndex(tbl, val)
     for i, v in ipairs(tbl) do
@@ -41,6 +48,9 @@ local settings = defaultSettings
 
 local function saveSettings()
     local jsonString = json.encode(settings)
+    debugLog("Saving settings :")
+    debugLog(jsonString)
+
     mod:SaveData(jsonString)
 end
 
@@ -48,31 +58,38 @@ mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, saveSettings)
 
 local function loadSettings()
     local jsonString = mod:LoadData()
+    debugLog("Loading settings file:")
+    debugLog(jsonString)
     settings = json.decode(jsonString)
     -- newly added settings are set to default value
     for k, v in pairs(defaultSettings) do
         if settings[k] == nil then
+            debugLog("Found a new setting called '" .. k .. "', setting it to its default value of " .. tostring(v))
             settings[k] = defaultSettings[k]
         end
     end
+
+    debugLog("Settings loaded successfully.")
 end
 
 local function initializeSettings()
+    debugLog("Initializing settings.")
     if not mod:HasData() then
+        debugLog("Mod data not found, loading default settings.")
         settings = defaultSettings
         return
     end
 
     if not pcall(loadSettings) then
         settings = defaultSettings
-        Isaac.DebugString("Error: Failed to load " .. mod.Name .. " settings, reverting to default settings.")
+        debugLog("Failed to load settings, reverting to default settings.")
     end
 end
 
-initializeSettings()
 
 local optionsModName = "Destroy poops&fires"
 local function setupMyModConfigMenuSettings()
+    debugLog("Setting up Config Menu Pure.")
     if ModConfigMenu == nil then
         return
     end
@@ -301,6 +318,8 @@ local function setupMyModConfigMenuSettings()
                 }
             }
     )
+
+    debugLog("Config Menu Pure configuration done.")
 end
 
 setupMyModConfigMenuSettings()
@@ -555,3 +574,4 @@ end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, destroyPoopsAndFires)
 mod:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, destroyPoopsAndFires)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, initForNewStage)
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, initializeSettings)
