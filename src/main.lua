@@ -561,8 +561,8 @@ local function destroyPoopsAndFires()
             local entity = entities:Get(i)
             -- TODO: verify that player could reach the fire
             if entity ~= nil then
-                if entity.Type == EntityType.ENTITY_FIREPLACE and (settings.destroyNormalFires and entity.Variant == 0) or
-                        (settings.destroyRedFires and entity.Variant == 1) then
+                if entity.Type == EntityType.ENTITY_FIREPLACE and ((settings.destroyNormalFires and entity.Variant == 0) or
+                        (settings.destroyRedFires and entity.Variant == 1)) then
                     entity:Die()
                 end
             end
